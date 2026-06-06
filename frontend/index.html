@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialApp - Home</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
+    nav { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    nav h1 { background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.8em; }
+    .nav-links a { color: #555; text-decoration: none; margin-left: 20px; font-weight: 600; transition: color 0.3s; }
+    .nav-links a:hover { color: #667eea; }
+    .container { max-width: 600px; margin: 30px auto; padding: 0 20px; }
+    .create-post { background: white; border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .create-post-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+    .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2em; flex-shrink: 0; }
+    textarea { width: 100%; border: 2px solid #eee; border-radius: 10px; padding: 12px 15px; font-size: 1em; font-family: inherit; resize: none; outline: none; transition: border 0.3s; height: 80px; }
+    textarea:focus { border-color: #667eea; }
+    .post-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; }
+    .image-input { display: flex; align-items: center; gap: 10px; }
+    .image-input input { border: none; font-size: 0.9em; color: #667eea; cursor: pointer; width: 200px; }
+    .post-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 25px; border-radius: 25px; font-size: 0.95em; cursor: pointer; transition: transform 0.2s; }
+    .post-btn:hover { transform: scale(1.05); }
+    .post-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .post-user { display: flex; align-items: center; gap: 12px; }
+    .post-user-info h4 { color: #333; font-size: 1em; }
+    .post-user-info span { color: #888; font-size: 0.85em; }
+    .post-content { color: #333; line-height: 1.6; margin-bottom: 15px; font-size: 1em; }
+    .post-image { width: 100%; border-radius: 10px; margin-bottom: 15px; max-height: 400px; object-fit: cover; }
+    .post-stats { display: flex; gap: 20px; color: #888; font-size: 0.9em; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #f0f0f0; }
+    .post-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+    .action-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9em; font-weight: 600; transition: all 0.2s; background: #f0f2f5; color: #555; }
+    .action-btn:hover { background: #e4e6ea; }
+    .action-btn.liked { background: #fff0f0; color: #e74c3c; }
+    .comments-section { margin-top: 10px; }
+    .comment { display: flex; gap: 10px; margin-bottom: 10px; }
+    .comment-content { background: #f0f2f5; border-radius: 10px; padding: 8px 12px; flex: 1; }
+    .comment-content strong { font-size: 0.9em; color: #333; }
+    .comment-content p { font-size: 0.9em; color: #555; margin-top: 3px; }
+    .comment-input { display: flex; gap: 10px; margin-top: 10px; }
+    .comment-input input { flex: 1; padding: 8px 15px; border: 2px solid #eee; border-radius: 25px; outline: none; font-size: 0.9em; }
+    .comment-input input:focus { border-color: #667eea; }
+    .comment-input button { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 8px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9em; }
+    .delete-btn { background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.2em; }
+    .delete-btn:hover { color: #e74c3c; }
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 15px 25px; border-radius: 10px; display: none; z-index: 999; }
+    .empty-feed { text-align: center; padding: 60px 20px; color: #888; }
+    .empty-feed h3 { font-size: 1.5em; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h1>📱 SocialApp</h1>
+    <div class="nav-links">
+      <a href="./index.html">🏠 Home</a>
+<a href="./search.html">🔍 Search</a>
+<a href="./notifications.html">🔔 Notifications</a>
+<a href="./messages.html">💬 Messages</a>
+<a href="#" onclick="goToProfile()">👤 Profile</a>
+<a href="#" onclick="logout()">🚪 Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Create Post -->
+    <div class="create-post" id="createPost">
+      <div class="create-post-header">
+        <div class="avatar" id="userAvatar">?</div>
+        <span id="userName" style="color:#555;font-weight:600">Loading...</span>
+      </div>
+      <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+      <div class="post-actions">
+        <div class="image-input">
+          <span>🖼️</span>
+          <input type="text" id="postImage" placeholder="Image URL (optional)">
+        </div>
+        <button class="post-btn" onclick="createPost()">Post 🚀</button>
+      </div>
+    </div>
+
+    <!-- Posts Feed -->
+    <div id="postsFeed">
+      <div class="empty-feed">
+        <h3>Loading posts...</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+    // Redirect if not logged in
+    if (!token || !user) {
+      window.location.href = 'login.html';
+    }
+
+    // Set user info
+    document.getElementById('userAvatar').textContent = user?.name?.charAt(0).toUpperCase() || '?';
+    document.getElementById('userName').textContent = user?.name || '';
+
+    // Load posts
+    loadPosts();
+
+    async function loadPosts() {
+      try {
+        const res = await fetch('http://localhost:5001/api/posts');
+        const posts = await res.json();
+        renderPosts(posts);
+      } catch (err) {
+        document.getElementById('postsFeed').innerHTML = '<div class="empty-feed"><h3>Error loading posts!</h3></div>';
+      }
+    }
+
+    function renderPosts(posts) {
+      const feed = document.getElementById('postsFeed');
+      if (posts.length === 0) {
+        feed.innerHTML = '<div class="empty-feed"><h3>No posts yet! 🌟</h3><p>Be the first to post something!</p></div>';
+        return;
+      }
+      feed.innerHTML = posts.map(post => `
+        <div class="post-card" id="post-${post._id}">
+          <div class="post-header">
+            <div class="post-user">
+              <div class="avatar">${post.user?.name?.charAt(0).toUpperCase() || '?'}</div>
+              <div class="post-user-info">
+                <h4>${post.user?.name || 'Unknown'}</h4>
+                <span>@${post.user?.username || ''} • ${new Date(post.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+            ${post.user?._id === user?.id ? `<button class="delete-btn" onclick="deletePost('${post._id}')">🗑️</button>` : ''}
+          </div>
+          <p class="post-content">${post.content}</p>
+          ${post.image ? `<img src="${post.image}" class="post-image" alt="post image">` : ''}
+          <div class="post-stats">
+            <span>❤️ ${post.likes?.length || 0} likes</span>
+            <span>💬 ${post.comments?.length || 0} comments</span>
+          </div>
+          <div class="post-buttons">
+            <button class="action-btn ${post.likes?.includes(user?.id) ? 'liked' : ''}" onclick="likePost('${post._id}', this)">
+              ❤️ Like
+            </button>
+            <button class="action-btn" onclick="toggleComments('${post._id}')">
+              💬 Comment
+            </button>
+          </div>
+          <div class="comments-section" id="comments-${post._id}" style="display:none">
+            ${post.comments?.map(c => `
+              <div class="comment">
+                <div class="avatar" style="width:35px;height:35px;font-size:0.9em">${c.user?.name?.charAt(0).toUpperCase() || '?'}</div>
+                <div class="comment-content">
+                  <strong>${c.user?.name || 'Unknown'}</strong>
+                  <p>${c.text}</p>
+                </div>
+              </div>
+            `).join('') || ''}
+            <div class="comment-input">
+              <input type="text" id="commentInput-${post._id}" placeholder="Write a comment...">
+              <button onclick="addComment('${post._id}')">Send</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function createPost() {
+      const content = document.getElementById('postContent').value;
+      const image = document.getElementById('postImage').value;
+      if (!content) { showToast('Please write something!'); return; }
+      try {
+        const res = await fetch('http://localhost:5001/api/posts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ content, image })
+        });
+        if (res.ok) {
+          document.getElementById('postContent').value = '';
+          document.getElementById('postImage').value = '';
+          showToast('Post created! 🎉');
+          loadPosts();
+        }
+      } catch (err) {
+        showToast('Error creating post!');
+      }
+    }
+
+    async function likePost(postId, btn) {
+      try {
+        const res = await fetch(`http://localhost:5001/api/posts/${postId}/like`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          btn.classList.toggle('liked', data.liked);
+          loadPosts();
+        }
+      } catch (err) {
+        showToast('Error liking post!');
+      }
+    }
+
+    function toggleComments(postId) {
+      const comments = document.getElementById(`comments-${postId}`);
+      comments.style.display = comments.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function addComment(postId) {
+      const input = document.getElementById(`commentInput-${postId}`);
+      const text = input.value;
+      if (!text) return;
+      try {
+        const res = await fetch(`http://localhost:5001/api/posts/${postId}/comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ text })
+        });
+        if (res.ok) {
+          input.value = '';
+          showToast('Comment added! 💬');
+          loadPosts();
+        }
+      } catch (err) {
+        showToast('Error adding comment!');
+      }
+    }
+
+    async function deletePost(postId) {
+      if (!confirm('Delete this post?')) return;
+      try {
+        await fetch(`http://localhost:5001/api/posts/${postId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        showToast('Post deleted!');
+        loadPosts();
+      } catch (err) {
+        showToast('Error deleting post!');
+      }
+    }
+
+    function goToProfile() {
+      window.location.href = `profile.html?username=${user.username}`;
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 2500);
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

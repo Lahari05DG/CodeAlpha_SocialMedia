@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialApp - Profile</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
+    nav { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    nav h1 { background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.8em; }
+    .nav-links a { color: #555; text-decoration: none; margin-left: 20px; font-weight: 600; }
+    .nav-links a:hover { color: #667eea; }
+    .container { max-width: 700px; margin: 30px auto; padding: 0 20px; }
+    .profile-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 25px; }
+    .profile-header { display: flex; align-items: center; gap: 25px; margin-bottom: 20px; }
+    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5em; font-weight: bold; flex-shrink: 0; overflow: hidden; }
+    .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .profile-info h2 { font-size: 1.5em; color: #333; margin-bottom: 5px; }
+    .profile-info p { color: #888; margin-bottom: 5px; }
+    .profile-info .bio { color: #555; margin-top: 8px; line-height: 1.5; }
+    .profile-stats { display: flex; gap: 30px; margin-top: 15px; }
+    .stat { text-align: center; }
+    .stat h3 { font-size: 1.3em; color: #333; }
+    .stat p { color: #888; font-size: 0.85em; }
+    .profile-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .follow-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 30px; border-radius: 25px; font-size: 0.95em; cursor: pointer; transition: transform 0.2s; }
+    .follow-btn:hover { transform: scale(1.05); }
+    .follow-btn.following { background: white; color: #667eea; border: 2px solid #667eea; }
+    .edit-btn { background: #f0f2f5; color: #555; border: none; padding: 10px 25px; border-radius: 25px; font-size: 0.95em; cursor: pointer; }
+    .edit-btn:hover { background: #e4e6ea; }
+    .edit-form { background: #f8f9fa; border-radius: 15px; padding: 20px; margin-top: 20px; display: none; }
+    .edit-form h3 { margin-bottom: 15px; color: #333; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; color: #555; font-weight: 600; font-size: 0.9em; }
+    input, textarea { width: 100%; padding: 10px 15px; border: 2px solid #eee; border-radius: 10px; font-size: 0.95em; outline: none; font-family: inherit; }
+    input:focus, textarea:focus { border-color: #667eea; }
+    textarea { height: 70px; resize: none; }
+    .save-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 25px; border-radius: 10px; cursor: pointer; font-size: 0.95em; }
+    .posts-section h3 { font-size: 1.3em; color: #333; margin-bottom: 20px; }
+    .post-card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .post-content { color: #333; line-height: 1.6; margin-bottom: 10px; }
+    .post-image { width: 100%; border-radius: 10px; margin-bottom: 10px; max-height: 300px; object-fit: cover; }
+    .post-stats { color: #888; font-size: 0.9em; }
+    .post-date { color: #aaa; font-size: 0.85em; margin-top: 8px; }
+    .empty-posts { text-align: center; padding: 40px; color: #888; }
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: white; padding: 15px 25px; border-radius: 10px; display: none; z-index: 999; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h1>📱 SocialApp</h1>
+    <div class="nav-links">
+      <a href="./index.html">🏠 Home</a>
+<a href="./search.html">🔍 Search</a>
+<a href="./notifications.html">🔔 Notifications</a>
+<a href="./messages.html">💬 Messages</a>
+<a href="#" onclick="goToProfile()">👤 Profile</a>
+<a href="#" onclick="logout()">🚪 Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profileAvatar">?</div>
+        <div class="profile-info">
+          <h2 id="profileName">Loading...</h2>
+          <p id="profileUsername" style="color:#667eea"></p>
+          <p class="bio" id="profileBio"></p>
+          <div class="profile-stats">
+            <div class="stat">
+              <h3 id="postsCount">0</h3>
+              <p>Posts</p>
+            </div>
+            <div class="stat">
+              <h3 id="followersCount">0</h3>
+              <p>Followers</p>
+            </div>
+            <div class="stat">
+              <h3 id="followingCount">0</h3>
+              <p>Following</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-actions" id="profileActions"></div>
+
+      <!-- Edit Form -->
+      <div class="edit-form" id="editForm">
+        <h3>✏️ Edit Profile</h3>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="editName" placeholder="Your name">
+        </div>
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea id="editBio" placeholder="Tell people about yourself..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Profile Picture URL</label>
+          <input type="text" id="editPicture" placeholder="https://...">
+        </div>
+        <button class="save-btn" onclick="saveProfile()">Save Changes ✅</button>
+      </div>
+    </div>
+
+    <!-- Posts Section -->
+    <div class="posts-section">
+      <h3>📝 Posts</h3>
+      <div id="userPosts">
+        <div class="empty-posts">Loading posts...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+
+    if (!token || !currentUser) {
+      window.location.href = 'login.html';
+    }
+
+    let profileUser = null;
+
+    // Load profile
+    async function loadProfile() {
+      try {
+        const res = await fetch(`http://localhost:5001/api/users/${username}`);
+        const user = await res.json();
+        profileUser = user;
+
+        // Set avatar
+        if (user.profilePicture) {
+          document.getElementById('profileAvatar').innerHTML = `<img src="${user.profilePicture}" alt="avatar">`;
+        } else {
+          document.getElementById('profileAvatar').textContent = user.name?.charAt(0).toUpperCase() || '?';
+        }
+
+        document.getElementById('profileName').textContent = user.name;
+        document.getElementById('profileUsername').textContent = '@' + user.username;
+        document.getElementById('profileBio').textContent = user.bio || 'No bio yet';
+        document.getElementById('followersCount').textContent = user.followers?.length || 0;
+        document.getElementById('followingCount').textContent = user.following?.length || 0;
+
+        // Show actions
+        const actions = document.getElementById('profileActions');
+        const isOwnProfile = currentUser.id === user._id;
+        const isFollowing = user.followers?.some(f => f._id === currentUser.id);
+
+        if (isOwnProfile) {
+          actions.innerHTML = `<button class="edit-btn" onclick="toggleEditForm()">✏️ Edit Profile</button>`;
+          document.getElementById('editName').value = user.name;
+          document.getElementById('editBio').value = user.bio || '';
+          document.getElementById('editPicture').value = user.profilePicture || '';
+        } else {
+          actions.innerHTML = `
+            <button class="follow-btn ${isFollowing ? 'following' : ''}" onclick="followUser('${user._id}')" id="followBtn">
+              ${isFollowing ? '✅ Following' : '➕ Follow'}
+            </button>
+          `;
+        }
+
+        loadUserPosts(user._id);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadUserPosts(userId) {
+      try {
+        const res = await fetch('http://localhost:5001/api/posts');
+        const posts = await res.json();
+        const userPosts = posts.filter(p => p.user?._id === userId);
+        document.getElementById('postsCount').textContent = userPosts.length;
+
+        const postsDiv = document.getElementById('userPosts');
+        if (userPosts.length === 0) {
+          postsDiv.innerHTML = '<div class="empty-posts">No posts yet! 📝</div>';
+          return;
+        }
+
+        postsDiv.innerHTML = userPosts.map(post => `
+          <div class="post-card">
+            <p class="post-content">${post.content}</p>
+            ${post.image ? `<img src="${post.image}" class="post-image" alt="post">` : ''}
+            <div class="post-stats">❤️ ${post.likes?.length || 0} likes • 💬 ${post.comments?.length || 0} comments</div>
+            <div class="post-date">${new Date(post.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'})}</div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function followUser(userId) {
+      try {
+        const res = await fetch(`http://localhost:5001/api/users/${userId}/follow`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.following ? 'Following! ✅' : 'Unfollowed!');
+          loadProfile();
+        }
+      } catch (err) {
+        showToast('Error!');
+      }
+    }
+
+    function toggleEditForm() {
+      const form = document.getElementById('editForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function saveProfile() {
+      const name = document.getElementById('editName').value;
+      const bio = document.getElementById('editBio').value;
+      const profilePicture = document.getElementById('editPicture').value;
+      try {
+        const res = await fetch('http://localhost:5001/api/users/profile/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ name, bio, profilePicture })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('user', JSON.stringify({ ...currentUser, name: data.name, profilePicture: data.profilePicture }));
+          showToast('Profile updated! ✅');
+          loadProfile();
+          toggleEditForm();
+        }
+      } catch (err) {
+        showToast('Error updating profile!');
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.display = 'block';
+      setTimeout(() => toast.style.display = 'none', 2500);
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

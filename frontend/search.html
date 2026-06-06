@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialApp - Search</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; }
+    nav { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    nav h1 { background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.8em; }
+    .nav-links a { color: #555; text-decoration: none; margin-left: 20px; font-weight: 600; }
+    .nav-links a:hover { color: #667eea; }
+    .container { max-width: 600px; margin: 30px auto; padding: 0 20px; }
+    .search-box { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 25px; }
+    .search-box h2 { color: #333; margin-bottom: 15px; font-size: 1.5em; }
+    .search-input { display: flex; gap: 10px; }
+    .search-input input { flex: 1; padding: 12px 20px; border: 2px solid #eee; border-radius: 25px; font-size: 1em; outline: none; transition: border 0.3s; }
+    .search-input input:focus { border-color: #667eea; }
+    .search-input button { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-size: 1em; transition: transform 0.2s; }
+    .search-input button:hover { transform: scale(1.05); }
+    .results { margin-top: 20px; }
+    .user-card { display: flex; align-items: center; gap: 15px; padding: 15px; background: white; border-radius: 15px; margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.2s; }
+    .user-card:hover { transform: translateY(-2px); }
+    .avatar { width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.4em; font-weight: bold; flex-shrink: 0; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-info { flex: 1; }
+    .user-info h3 { color: #333; font-size: 1em; margin-bottom: 3px; }
+    .user-info p { color: #888; font-size: 0.85em; }
+    .user-info .bio { color: #555; font-size: 0.85em; margin-top: 3px; }
+    .follow-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 0.85em; white-space: nowrap; }
+    .follow-btn.following { background: white; color: #667eea; border: 2px solid #667eea; }
+    .stats { display: flex; gap: 15px; margin-top: 5px; }
+    .stats span { color: #888; font-size: 0.8em; }
+    .empty { text-align: center; padding: 40px; color: #888; }
+    .empty h3 { font-size: 1.3em; margin-bottom: 10px; }
+    .all-users { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .all-users h2 { color: #333; margin-bottom: 20px; font-size: 1.3em; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <h1>📱 SocialApp</h1>
+    <div class="nav-links">
+      <a href="index.html">🏠 Home</a>
+      <a href="notifications.html">🔔 Notifications</a>
+<a href="messages.html">💬 Messages</a>
+      <a href="search.html">🔍 Search</a>
+      <a href="#" onclick="goToProfile()">👤 Profile</a>
+      <a href="#" onclick="logout()">🚪 Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Search Box -->
+    <div class="search-box">
+      <h2>🔍 Search Users</h2>
+      <div class="search-input">
+        <input type="text" id="searchInput" placeholder="Search by name or username..." oninput="searchUsers()">
+        <button onclick="searchUsers()">Search</button>
+      </div>
+      <div class="results" id="searchResults"></div>
+    </div>
+
+    <!-- All Users -->
+    <div class="all-users">
+      <h2>👥 People You May Know</h2>
+      <div id="allUsers">
+        <div class="empty"><p>Loading users...</p></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const currentUser = JSON.parse(localStorage.getItem('user') || 'null');
+
+    if (!token || !currentUser) {
+      window.location.href = 'login.html';
+    }
+
+    let allUsers = [];
+
+    // Load all users on page load
+    loadAllUsers();
+
+    async function loadAllUsers() {
+      try {
+        const res = await fetch('http://localhost:5001/api/users');
+        const users = await res.json();
+        // Filter out current user
+        allUsers = users.filter(u => u._id !== currentUser.id);
+        renderUsers(allUsers, 'allUsers');
+      } catch (err) {
+        document.getElementById('allUsers').innerHTML = '<div class="empty"><h3>Error loading users!</h3></div>';
+      }
+    }
+
+    function searchUsers() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const resultsDiv = document.getElementById('searchResults');
+
+      if (!query) {
+        resultsDiv.innerHTML = '';
+        return;
+      }
+
+      const filtered = allUsers.filter(u =>
+        u.name.toLowerCase().includes(query) ||
+        u.username.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        resultsDiv.innerHTML = '<div class="empty"><h3>No users found! 😕</h3></div>';
+        return;
+      }
+
+      renderUsers(filtered, 'searchResults');
+    }
+
+    function renderUsers(users, containerId) {
+      const container = document.getElementById(containerId);
+      if (users.length === 0) {
+        container.innerHTML = '<div class="empty"><h3>No users found!</h3></div>';
+        return;
+      }
+
+      container.innerHTML = users.map(u => {
+        const isFollowing = u.followers?.some(f => f._id === currentUser.id || f === currentUser.id);
+        return `
+          <div class="user-card" onclick="visitProfile('${u.username}')">
+            <div class="avatar">
+              ${u.profilePicture ? `<img src="${u.profilePicture}" alt="avatar">` : u.name?.charAt(0).toUpperCase()}
+            </div>
+            <div class="user-info">
+              <h3>${u.name}</h3>
+              <p>@${u.username}</p>
+              ${u.bio ? `<p class="bio">${u.bio}</p>` : ''}
+              <div class="stats">
+                <span>👥 ${u.followers?.length || 0} followers</span>
+                <span>📝 Following ${u.following?.length || 0}</span>
+              </div>
+            </div>
+            <button class="follow-btn ${isFollowing ? 'following' : ''}"
+              onclick="event.stopPropagation(); followUser('${u._id}', this)">
+              ${isFollowing ? '✅ Following' : '➕ Follow'}
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function followUser(userId, btn) {
+      try {
+        const res = await fetch(`http://localhost:5001/api/users/${userId}/follow`, {
+          method: 'PUT',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          btn.classList.toggle('following', data.following);
+          btn.textContent = data.following ? '✅ Following' : '➕ Follow';
+          loadAllUsers();
+        }
+      } catch (err) {
+        alert('Error following user!');
+      }
+    }
+
+    function visitProfile(username) {
+      window.location.href = `profile.html?username=${username}`;
+    }
+
+    function goToProfile() {
+      window.location.href = `profile.html?username=${currentUser.username}`;
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>
